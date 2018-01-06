@@ -54,6 +54,9 @@ def compete (net1, net2):
         cnt+=1
         if not game.checkWinner() == -1:
             game_end = True
+        # game.print_board()
+        # print
+    # print("THE WINNER IS" + str(game.checkWinner()))
     if getWinner(game) == 1:
         return 1
     elif getWinner(game) == 2:

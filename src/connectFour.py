@@ -8,7 +8,7 @@ class Game:
 
     def print_board(self):
         for i in reversed(range(6)):
-            print self.gameState[i]
+            print(self.gameState[i])
 
     def playPos (self, position):
         if self.check_valid(position):
@@ -35,6 +35,7 @@ class Game:
         for y in range(6):
             if g[y][position] == 0:
                 g[y][position] = player
+                break
         return g
 
     def check_valid (self, position):

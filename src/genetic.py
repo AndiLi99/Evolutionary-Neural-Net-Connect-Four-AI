@@ -1,4 +1,5 @@
 import numpy as np
+from copy import copy, deepcopy
 import net
 import Fitness
 import random
@@ -11,7 +12,6 @@ class Pop:
         self.population = []
         self.pop_size = initial_pop
         self.fitness = zip(np.zeros(initial_pop), range(initial_pop))
-        self.survivors = []
         self.layer_sizes = layer_sizes
         for i in range(initial_pop):
             self.population.append(net.Net(layer_sizes, self.latest_ID))
@@ -23,27 +23,29 @@ class Pop:
         self.fitness = zip(Fitness.populationFitness(self.population, alpha), range(0,self.pop_size))
         # self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
+
         #10% chance of population lives randomly
-        self.survivors = [0 if (np.random.random_sample() > 0.1) else 1 for i in range(self.pop_size)]
+        survivors = [0 if random.random > 0.1 else 1 for i in range(self.pop_size)]
+
         for i in range(0, self.pop_size/4):
-            self.survivors [self.fitness[i][1]] = 1
+            survivors [self.fitness[i][1]] = 1
 
         survivors_index = []
         for i in range(self.pop_size):
-            if (self.survivors[i] == 1):
+            if survivors[i] == 1:
                 survivors_index.append(i)
 
         newPop = []
-        for i in range(0, len(survivors_index)):
+        for i in range(len(survivors_index)):
             newPop.append(self.population[survivors_index[i]])
-        while (len(newPop) < self.pop_size):
-            newPop.append(self.mutate_individual(self.population[survivors_index[random.randint(0,len(survivors_index)-1)]]))
+        while len(newPop) <= self.pop_size:
+            mutated_net = self.mutate_individual(newPop[random.randint(0, len(survivors_index)-1)])
+            newPop.append(mutated_net)
         self.population = newPop
 
     def print_pop(self):
         for i, pop in enumerate(self.population):
-            print self.population[i].getID()
-        print
+            print(self.population[i].getID())
 
     def random_pop(self):
         for i,pop in enumerate(self.population):
@@ -56,8 +58,8 @@ class Pop:
 
         init_w_rng = random.random()*mutate_range
         init_b_rng = random.random()*mutate_range
-        we = parent_network.get_weights()
-        bi = parent_network.get_biases()
+        we = deepcopy(parent_network.get_weights())
+        bi = deepcopy(parent_network.get_biases())
         for a in range(len(we)):
             for b in range(len(we[a])):
                 for c in range(len(we[a][b])):

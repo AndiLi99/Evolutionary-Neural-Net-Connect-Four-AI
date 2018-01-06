@@ -1,7 +1,14 @@
 import numpy as np
 
 def sigmoid (z):
-    return 1/(1+np.exp(-z))
+    for i in range(len(z)):
+        if z[i] < -35:
+            z[i] = 0.000000000001
+        elif z[i] > 35:
+            z[i] = 0.99999999999
+        else:
+            z[i] = 1/(1+np.exp(z[i]))
+    return z
 
 # -- Class for the neural network
 class Net:
