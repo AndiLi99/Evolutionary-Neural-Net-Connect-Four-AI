@@ -43,8 +43,8 @@ class Pop:
 
     def evolve (self, games_played):
         #fitness is a 1D array of the fitness of each member
-        self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
-        # self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
+        # self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
+        self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
 
         #10% chance of population lives randomly
@@ -174,48 +174,6 @@ def crossover (father, mother, alpha=0.5):
     child = Individual(father.get_layer_types(), father.get_layer_shapes(), layers)
     child = mutate_individual(child)
     return child
-
-#
-# def load_population(file_name):
-#     counter = 0
-#     file = open(file_name, 'r')
-#     #read line by line
-#     arr = file.read().splitlines()
-#     pop_size = int(arr[counter])
-#     counter +=1
-#     pop = []
-#     layer_sizes = []
-#     for i in range(pop_size):
-#         n_layers = int(arr[counter])
-#         counter += 1
-#         layer_sizes = []
-#         for x in range(n_layers):
-#             layer_sizes.append(int(arr[counter]))
-#             counter += 1
-#         biases = []
-#         weights = []
-#         for x in range(1, n_layers):
-#             layer = []
-#             for y in range(layer_sizes[x]):
-#                 neuron = []
-#                 for z in range(layer_sizes[x-1]):
-#                     neuron.append(float(arr[counter]))
-#                     counter += 1
-#                 layer.append(neuron)
-#             weights.append(layer)
-#         for x in range (1, n_layers):
-#             layer = []
-#             for y in range(layer_sizes[x]):
-#                 layer.append(float(arr[counter]))
-#                 counter += 1
-#             biases.append(layer)
-#         file.close()
-#         network = net.Net(layer_sizes)
-#         network.set_weights_biases(weights, biases)
-#         pop.append(network)
-#     p = Pop([],0)
-#     p.set_population(pop, layer_sizes)
-#     return p
 
     def set_population(self, population, layer_sizes):
         self.population = population
