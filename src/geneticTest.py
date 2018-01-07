@@ -4,11 +4,20 @@ import net
 import numpy as np
 import connectFour
 from minimax import pickMove
+import individual
 
 pop = genetic.Pop(layer_types=["conv", "dense", "soft"], layer_shapes=[[(1, 6, 7), (4, 1, 4, 4)], [(20, 4*3*4)], [(2, 20)]], initial_pop=20)
 pop.evolve(12)
 
 net1 = pop.population[0]
+net1.save("net1.txt")
+pop.save("population.txt")
+pop = genetic.load_population("population.txt")
+net1 = pop.population[0]
+net1.save("net1compare.txt")
+net2 = individual.load("net1compare.txt")
+net2.save("net2.txt")
+
 net2 = pop.population[1]
 
 while True:

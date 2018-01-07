@@ -16,27 +16,28 @@ class Individual:
         self.layer_types = layer_types
         self.layer_shapes = layer_shapes
         self.num_genes = 0
-        if not layers:
-            self.layers = []
-            for type, shpe in zip(layer_types, layer_shapes):
-                if type == "conv":
-                    self.layers.append(ConvLayer(shpe[0], shpe[1]))
+        if layers is not None:
+            self.layers = layers
+            for typ, shpe in zip(layer_types, layer_shapes):
+                if typ == "conv":
                     self.num_genes += shpe[1][0]
-                elif type == "dense":
-                    self.layers.append(DenseLayer(shpe[0]))
+                elif typ == "dense":
                     self.num_genes += shpe[0][0]
-                elif type == "soft":
-                    self.layers.append(SoftmaxLayer(shpe[0]))
+                elif typ == "soft":
                     self.num_genes += shpe[0][0]
         else:
-            self.layers = layers
-            for type, shpe in zip(layer_types, layer_shapes):
-                if type == "conv":
+            self.layers = []
+            for typ, shpe in zip(layer_types, layer_shapes):
+                if typ == "conv":
+                    self.layers.append(ConvLayer(shpe[0], shpe[1]))
                     self.num_genes += shpe[1][0]
-                elif type == "dense":
+                elif typ == "dense":
+                    self.layers.append(DenseLayer(shpe[0]))
                     self.num_genes += shpe[0][0]
-                elif type == "soft":
+                elif typ == "soft":
+                    self.layers.append(SoftmaxLayer(shpe[0]))
                     self.num_genes += shpe[0][0]
+
     # Returns the output of the network given an input
     # Args:
     #   input_layer (np array): the input
@@ -119,6 +120,7 @@ class Individual:
                 for x in ls[0]:
                     file.write(str(x) + "\n")
 
+
                 # Store weights
                 for w in l.get_all_weights():
                     for i in w:
@@ -143,27 +145,28 @@ def load (filename):
     num_layers = int(arr[counter])
     counter += 1
 
-    type = arr[counter]
-    layer_types.append(type)
-    counter += 1
-
     for i in range(num_layers):
-        if type == "conv":
+        typ = arr[counter]
+        layer_types.append(typ)
+        counter += 1
+
+        if typ == "conv":
             image_shape = (int(arr[counter]), int(arr[counter + 1]), int(arr[counter + 2]))
             counter += 3
 
             filter_shape = (int(arr[counter]), int(arr[counter + 1]), int(arr[counter + 2]), int(arr[counter + 3]))
             counter += 4
 
+            layer_shapes.append([image_shape, filter_shape])
             filters = []
 
             for i in range(filter_shape[0]):
-                weights = np.zeros(filter_shape)
+                weights = np.zeros(filter_shape[1:])
                 bias = 0
 
-                for i in range(filter_shape[0]):
-                    for j in range(filter_shape[1]):
-                        for k in range(filter_shape[2]):
+                for i in range(filter_shape[1]):
+                    for j in range(filter_shape[2]):
+                        for k in range(filter_shape[3]):
                             weights[i][j][k] = float(arr[counter])
                             counter += 1
                 bias = float(arr[counter])
@@ -173,7 +176,7 @@ def load (filename):
 
             layers.append(ConvLayer(image_shape, filter_shape, filters))
 
-        elif type == "dense" or type == "soft":
+        elif typ == "dense" or typ == "soft":
             shpe = (int(arr[counter]), int(arr[counter + 1]))
             layer_shapes.append([shpe])
             counter += 2
@@ -190,8 +193,8 @@ def load (filename):
                 biases[cl] = float(arr[counter])
                 counter += 1
 
-            if type == "dense":
+            if typ == "dense":
                 layers.append(DenseLayer(shpe, weights, biases))
-            elif type == "soft":
+            elif typ == "soft":
                 layers.append(SoftmaxLayer(shpe, weights, biases))
     return Individual(layer_types, layer_shapes, layers)

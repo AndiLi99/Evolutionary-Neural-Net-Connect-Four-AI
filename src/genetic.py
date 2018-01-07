@@ -23,7 +23,7 @@ class Pop:
         self.layer_types = layer_types
         self.layer_shapes = layer_shapes
 
-        if population:
+        if population is not None:
             self.population = population
 
             # If not enough members, create random ones
@@ -42,7 +42,7 @@ class Pop:
                 self.population.append(Individual(layer_types, layer_shapes))
 
     def evolve (self, games_played):
-        #fitness is a 1D array of the fitness of each member
+        # fitness is a 1D array of the fitness of each member
         # self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
         self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
@@ -64,116 +64,6 @@ class Pop:
         while len(newPop) <= self.pop_size:
             newPop.append(crossover(self.population[survivors_index[random.randint(0, len(survivors_index) -1)]], self.population[survivors_index[random.randint(0, len(survivors_index) -1)]]))
         self.population = newPop
-
-    def print_pop(self):
-        for i, pop in enumerate(self.population):
-            print(self.population[i].getID())
-
-    # Mutates an individual
-    # Args:
-    #   individual ("Individual" object)- the individual to be mutated
-    #   mutate_range (float) optional - the maximum possible change for a parameter
-    #   mutate_chance (float) optional - the chance for a gene to be mutated
-
-def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
-    # Set mutation chance so on average, 1 gene is mutated (probability = 1/total num genes)
-    if not mutate_chance:
-        mutate_chance = 1.0/individual.get_num_genes()
-
-    # Stores data for new mutated individual
-    layer_types = individual.get_layer_types()
-    layer_shapes = individual.get_layer_shapes()
-    layers = individual.get_layers()
-
-    # Loop for each layer
-    for lt, l in zip(layer_types, layers):
-        # If layer type is convolutional
-        if lt == "conv":
-            # Retrieve all filters for the layer
-            filters = l.get_all_filters()
-
-            for i, f in enumerate(filters):
-                # Randomly select filters to be mutated
-                if random.random() < mutate_chance:
-                    # Randomly select a maximum mutation value for both weights and biases (adds more variance)
-                    mutate_w = random.random()*mutate_range
-                    mutate_b = random.random()*mutate_range
-
-                    # Mutations for weights and biases (range is (plus/minus) mutate values)
-                    weight_mutation = (2*random.random()-1)*mutate_w*np.random.randn(f.get_filter_size()[0],f.get_filter_size()[1],f.get_filter_size()[2])
-                    bias_mutation = (2*random.random()-1)*mutate_b
-
-                    # Mutate
-                    f.set_weights(f.get_weights()+weight_mutation)
-                    f.set_bias(f.get_bias()+bias_mutation)
-
-                    # Set mutated filter
-                    l.set_filter(i, f)
-        # If layer is dense or softmax
-        elif lt == "dense" or lt == "soft":
-            # Retrieve weights and biases for layer
-            weights = l.get_all_weights()
-            biases = l.get_all_biases()
-
-            for i in range(len(biases)):
-                # Randomly select neurons whose weights and biases are to be mutated
-                if random.random() < mutate_chance:
-                    # Randomly select a maximum mutation value for both weights and biases
-                    mutate_w = random.random()*mutate_range
-                    mutate_b = random.random()*mutate_range
-
-                    # Mutate
-                    weights[i] += (2*random.random()-1)*mutate_w*np.random.randn(l.get_layer_shape()[1])
-                    biases[i] += (2*random.random()-1)*mutate_b
-
-            # Set weights and biases
-            l.set_weights_biases(weights, biases)
-
-    #Set mutations for individual
-    individual.set_layers(layer_types, layer_shapes, layers)
-
-    return individual
-
-    # Creates a child from a mother and father
-    # Args:
-    #   father (individual) - a parent
-    #   mother (individual) - a parent
-    #   alpha (float) - chance to select gene from father, (1-alpha) chance from mother
-
-def crossover (father, mother, alpha=0.5):
-    layers = []
-    for lt, ls, fl, ml in zip(father.get_layer_types(), father.get_layer_shapes(),
-                              father.get_layers(), mother.get_layers()):
-        if lt == "conv":
-            lyr = ConvLayer(image_shape=ls[0], filter_shape=ls[1])
-            # Loop for each filter
-            for i in range(ls[1][0]):
-                parent = ml
-                # Randomly pick either mother or father gene based on alpha
-                if random.random() < alpha:
-                    parent = fl
-                lyr.set_filter(index=i, filtr=deepcopy(parent.get_filter(i)))
-            layers.append(lyr)
-        elif lt == "dense" or lt == "soft":
-            weights = []
-            biases = []
-            lyr = DenseLayer(layer_shape=ls[0])
-            if lt == "soft":
-                lyr = SoftmaxLayer(layer_shape=ls[0])
-
-            # Loop for each neuron
-            for i in range(ls[0][0]):
-                parent = ml
-                # Randomly pick either mother or father gene based on alpha
-                if random.random() < alpha:
-                    parent = fl
-                weights.append(deepcopy(parent.get_weights(i)))
-                biases.append(deepcopy(parent.get_biases(i)))
-            lyr.set_weights_biases(weights, biases)
-            layers.append(lyr)
-    child = Individual(father.get_layer_types(), father.get_layer_shapes(), layers)
-    child = mutate_individual(child)
-    return child
 
     def set_population(self, population, layer_sizes):
         self.population = population
@@ -240,6 +130,112 @@ def crossover (father, mother, alpha=0.5):
                         file.write(str(i) + "\n")
         file.close()
 
+# Mutates an individual
+# Args:
+#   individual ("Individual" object)- the individual to be mutated
+#   mutate_range (float) optional - the maximum possible change for a parameter
+#   mutate_chance (float) optional - the chance for a gene to be mutated
+
+def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
+    # Set mutation chance so on average, 1 gene is mutated (probability = 1/total num genes)
+    if mutate_chance is not None:
+        mutate_chance = 1.0/individual.get_num_genes()
+
+    # Stores data for new mutated individual
+    layer_types = individual.get_layer_types()
+    layer_shapes = individual.get_layer_shapes()
+    layers = individual.get_layers()
+
+    # Loop for each layer
+    for lt, l in zip(layer_types, layers):
+        # If layer type is convolutional
+        if lt == "conv":
+            # Retrieve all filters for the layer
+            filters = l.get_all_filters()
+
+            for i, f in enumerate(filters):
+                # Randomly select filters to be mutated
+                if random.random() < mutate_chance:
+                    # Randomly select a maximum mutation value for both weights and biases (adds more variance)
+                    mutate_w = random.random()*mutate_range
+                    mutate_b = random.random()*mutate_range
+
+                    # Mutations for weights and biases (range is (plus/minus) mutate values)
+                    weight_mutation = (2*random.random()-1)*mutate_w*np.random.randn(f.get_filter_size()[0],f.get_filter_size()[1],f.get_filter_size()[2])
+                    bias_mutation = (2*random.random()-1)*mutate_b
+
+                    # Mutate
+                    f.set_weights(f.get_weights()+weight_mutation)
+                    f.set_bias(f.get_bias()+bias_mutation)
+
+                    # Set mutated filter
+                    l.set_filter(i, f)
+        # If layer is dense or softmax
+        elif lt == "dense" or lt == "soft":
+            # Retrieve weights and biases for layer
+            weights = l.get_all_weights()
+            biases = l.get_all_biases()
+
+            for i in range(len(biases)):
+                # Randomly select neurons whose weights and biases are to be mutated
+                if random.random() < mutate_chance:
+                    # Randomly select a maximum mutation value for both weights and biases
+                    mutate_w = random.random()*mutate_range
+                    mutate_b = random.random()*mutate_range
+
+                    # Mutate
+                    weights[i] += (2*random.random()-1)*mutate_w*np.random.randn(l.get_layer_shape()[1])
+                    biases[i] += (2*random.random()-1)*mutate_b
+
+            # Set weights and biases
+            l.set_weights_biases(weights, biases)
+
+    #Set mutations for individual
+    individual.set_layers(layer_types, layer_shapes, layers)
+
+    return individual
+
+# Creates a child from a mother and father
+# Args:
+#   father (individual) - a parent
+#   mother (individual) - a parent
+#   alpha (float) - chance to select gene from father, (1-alpha) chance from mother
+
+def crossover (father, mother, alpha=0.5):
+    layers = []
+    for lt, ls, fl, ml in zip(father.get_layer_types(), father.get_layer_shapes(),
+                              father.get_layers(), mother.get_layers()):
+        if lt == "conv":
+            lyr = ConvLayer(image_shape=ls[0], filter_shape=ls[1])
+            # Loop for each filter
+            for i in range(ls[1][0]):
+                parent = ml
+                # Randomly pick either mother or father gene based on alpha
+                if random.random() < alpha:
+                    parent = fl
+                lyr.set_filter(index=i, filtr=deepcopy(parent.get_filter(i)))
+            layers.append(lyr)
+        elif lt == "dense" or lt == "soft":
+            weights = []
+            biases = []
+            lyr = DenseLayer(layer_shape=ls[0])
+            if lt == "soft":
+                lyr = SoftmaxLayer(layer_shape=ls[0])
+
+            # Loop for each neuron
+            for i in range(ls[0][0]):
+                parent = ml
+                # Randomly pick either mother or father gene based on alpha
+                if random.random() < alpha:
+                    parent = fl
+                weights.append(deepcopy(parent.get_weights(i)))
+                biases.append(deepcopy(parent.get_biases(i)))
+            lyr.set_weights_biases(weights, biases)
+            layers.append(lyr)
+    child = Individual(father.get_layer_types(), father.get_layer_shapes(), layers)
+    child = mutate_individual(child)
+    return child
+
 # Loads population from a saved file
 # File format:
 #   1. number of individuals in population
@@ -279,15 +275,17 @@ def load_population(file_name):
                 filter_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]), int(arr[counter+3]))
                 counter += 4
 
+                layer_shapes.append([image_shape, filter_shape])
+
                 filters = []
 
                 for i in range(filter_shape[0]):
-                    weights = np.zeros(filter_shape)
+                    weights = np.zeros(filter_shape[1:])
                     bias = 0
 
-                    for i in range(filter_shape[0]):
-                        for j in range(filter_shape[1]):
-                            for k in range(filter_shape[2]):
+                    for i in range(filter_shape[1]):
+                        for j in range(filter_shape[2]):
+                            for k in range(filter_shape[3]):
                                 weights[i][j][k] = float(arr[counter])
                                 counter += 1
                     bias = float(arr[counter])

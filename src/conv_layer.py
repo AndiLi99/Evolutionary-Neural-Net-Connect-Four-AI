@@ -23,7 +23,7 @@ class ConvLayer:
         self.output_shape = (filter_shape[0], image_shape[1]-filter_shape[1]+1, image_shape[2]-filter_shape[2]+1)
 
         # Create list of filter objects
-        if filters:
+        if filters is not None:
             self.filters = filters
         else:
             self.filters = []
@@ -66,12 +66,12 @@ class Filter:
         self.feature_map_length = filter_size[2]
         self.feature_map_height = filter_size[1]
         self.num_feature_maps = filter_size[0]
-        if weights:
+        if weights is not None:
             self.weights = weights
         else:
             self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length) for f in range(self.num_feature_maps)]
 
-        if bias:
+        if bias is not None:
             self.bias = bias
         else:
             self.bias = np.random.random()
