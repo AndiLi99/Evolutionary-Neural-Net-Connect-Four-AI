@@ -10,7 +10,7 @@ class Individual:
     #           for convolution layers, the string "conv" should be used
     #           for dense layers, the string "dense" should be used
     #           for softmax layers, the string "soft" should be used
-    #   layer_shapes (list of tuple-lists): a list of tuple-lists indicating the shapes of each layer
+    #   layer_shapes (list of lists of tuples): a list of lists of tuples indicating the shapes of each layer
     #           for convolution layers, a list should contain two seperate tuples (image shape, filter shape)
     #           for dense and softmax layers, a list should contain one individual tuple (layer shape)
     def __init__(self, layer_types, layer_shapes, layers=None):
@@ -25,32 +25,35 @@ class Individual:
                     self.num_genes += shpe[1][0]
                 elif type == "dense":
                     self.layers.append(DenseLayer(shpe[0]))
-                    self.num_genes += shpe[0]
+                    self.num_genes += shpe[0][0]
                 elif type == "soft":
                     self.layers.append(SoftmaxLayer(shpe[0]))
-                    self.num_genes += shpe[0]
+                    self.num_genes += shpe[0][0]
         else:
             self.layers = layers
 
     # Returns the output of the network given an input
     # Args:
     #   input_layer (np array): the input
-    def forward_pass(self, input_layer):
+    def feed_forward(self, input_layer):
         is_conv_layer = True
         if not self.layer_types[0] == 'conv':
             is_conv_layer = False
         elif self.layer_types[0] == 'conv':
             if len(input_layer.shape) == 2:
-                input = np.array(input_layer)
+                input_layer = np.array([input_layer])
 
-        for lyr, type in zip(self.layers, self.layer_types):
-            if type == 'dense' or type == 'soft':
+        for lyr, typ in zip(self.layers, self.layer_types):
+            if typ == 'dense' or typ == 'soft':
                 # Squash input if previous layer is convolutional
                 if is_conv_layer == True:
-                    input_layer = input_layer.flatten()
-                    is_conv_layer = False
+                    l = np.array([])
+                    for x in input_layer:
+                        l = np.concatenate((l,x.ravel()))
 
-            input_layer = lyr.forward_pass(input_layer)
+                    input_layer = l.ravel()
+                    is_conv_layer = False
+            input_layer = lyr.feed_forward(input_layer)
         return input_layer
 
     def get_layers(self):

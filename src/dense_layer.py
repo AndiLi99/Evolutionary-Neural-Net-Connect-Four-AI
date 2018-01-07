@@ -21,7 +21,7 @@ class DenseLayer:# -- Class for the dense layer
 
         # Weights is a 2D list w[x][y] where x is the neuron number in the current layer and
         # y is the neuron number on the previous layer
-        self.weights = np.random.randn(layer_shape)
+        self.weights = np.random.randn(layer_shape[0], layer_shape[1])
 
     # Calculates the activation of the layer given a list of activations
     # Args:

@@ -11,25 +11,23 @@ from softmax_layer import SoftmaxLayer
 from operator import itemgetter
 
 class Pop:
-    def __init__(self, layer_sizes, initial_pop):
-        self.latest_ID = 0
+    def __init__(self, layer_types, layer_shapes, initial_pop):
         self.population = []
         self.pop_size = initial_pop
         self.fitness = zip(np.zeros(initial_pop), range(initial_pop))
-        self.layer_sizes = layer_sizes
+        self.layer_types = layer_types
+        self.layer_shapes = layer_shapes
         for i in range(initial_pop):
-            self.population.append(net.Net(layer_sizes, self.latest_ID))
-            self.latest_ID+=1
-        self.random_pop()
+            self.population.append(Individual(layer_types, layer_shapes))
 
-    def evolve (self, alpha):
+    def evolve (self, games_played):
         #fitness is a 1D array of the fitness of each member
-        self.fitness = zip(Fitness.populationFitness(self.population, alpha), range(0,self.pop_size))
+        self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
         # self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
 
         #10% chance of population lives randomly
-        survivors = [0 if random.random > 0.1 else 1 for i in range(self.pop_size)]
+        survivors = [0 if random.random() > 0.1 else 1 for i in range(self.pop_size)]
 
         for i in range(0, self.pop_size/4):
             survivors [self.fitness[i][1]] = 1
@@ -50,11 +48,6 @@ class Pop:
     def print_pop(self):
         for i, pop in enumerate(self.population):
             print(self.population[i].getID())
-
-    def random_pop(self):
-        for i,pop in enumerate(self.population):
-            self.population[i].large_weight_initializer()
-        return self.population
 
     # Mutates an individual
     # Args:
@@ -81,14 +74,14 @@ class Pop:
 
                 for i, f in enumerate(filters):
                     # Randomly select filters to be mutated
-                    if random.random < mutate_chance:
+                    if random.random() < mutate_chance:
                         # Randomly select a maximum mutation value for both weights and biases (adds more variance)
-                        mutate_w = random.random*mutate_range
-                        mutate_b = random.random*mutate_range
+                        mutate_w = random.random()*mutate_range
+                        mutate_b = random.random()*mutate_range
 
                         # Mutations for weights and biases (range is (plus/minus) mutate values)
-                        weight_mutation = (2*random.random-1)*mutate_w*np.random.randn(f.get_filter_size())
-                        bias_mutation = (2*random.random-1)*mutate_b
+                        weight_mutation = (2*random.random()-1)*mutate_w*np.random.randn(f.get_filter_size())
+                        bias_mutation = (2*random.random()-1)*mutate_b
 
                         # Mutate
                         f.set_weights(f.get_weights()+weight_mutation)
@@ -104,14 +97,14 @@ class Pop:
 
                 for i in range(len(biases)):
                     # Randomly select neurons whose weights and biases are to be mutated
-                    if random.random < mutate_chance:
+                    if random.random() < mutate_chance:
                         # Randomly select a maximum mutation value for both weights and biases
-                        mutate_w = random.random*mutate_range
-                        mutate_b = random.random*mutate_range
+                        mutate_w = random.random()*mutate_range
+                        mutate_b = random.random()*mutate_range
 
                         # Mutate
-                        weights[i] += (2*random.random-1)*mutate_w*np.random.randn(l.get_layer_shape[1])
-                        biases[i] += (2*random.random-1)*mutate_b
+                        weights[i] += (2*random.random()-1)*mutate_w*np.random.randn(l.get_layer_shape[1])
+                        biases[i] += (2*random.random()-1)*mutate_b
 
                 # Set weights and biases
                 l.set_weights_biases(weights, biases)
@@ -137,7 +130,7 @@ class Pop:
                 for i in range(ls[1][0]):
                     parent = ml
                     # Randomly pick either mother or father gene based on alpha
-                    if random.random < alpha:
+                    if random.random() < alpha:
                         parent = fl
                     lyr.set_filter(index=i, filter=parent.get_filter(i))
                 layers.append(lyr)
@@ -152,7 +145,7 @@ class Pop:
                 for i in range(ls[0]):
                     parent = ml
                     # Randomly pick either mother or father gene based on alpha
-                    if random.random < alpha:
+                    if random.random() < alpha:
                         parent = fl
                     weights.append(parent.get_weights[i])
                     biases.append(parent.get_biases[i])

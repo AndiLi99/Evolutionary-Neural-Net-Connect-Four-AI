@@ -1,7 +1,7 @@
 import numpy as np
 from random import randint
 import net
-from connectFour
+import connectFour
 import minimax
 
 length = 7

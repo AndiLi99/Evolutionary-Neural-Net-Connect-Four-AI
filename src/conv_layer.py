@@ -1,6 +1,18 @@
 import numpy as np
 from copy import deepcopy
 
+def sigmoid (z):
+    for i in range(len(z)):
+        for j in range(len(z[i])):
+            for k in range(len(z[i][j])):
+                if z[i][j][k] < -35:
+                    z[i][j][k] = 0.000000000001
+                elif z[i][j][k] > 35:
+                    z[i][j][k] = 0.99999999999
+                else:
+                    z[i][j][k] = 1/(1+np.exp(z[i][j][k]))
+    return z
+
 # Convolution layer
 class ConvLayer:
     # Args:
@@ -17,12 +29,13 @@ class ConvLayer:
             self.filters.append(Filter(self.filter_shape[1:]))
 
     # Forwards past a list of images and returns the new list of images
-    def forward_pass (self, image_list):
+    def feed_forward (self, image_list):
         new_image_list = []
         for i in range(self.filter_shape[0]):
             fil = self.filters[i]
-            feature_image = fil.use_filter(self.image_shape[1:], image_list)
-        return new_image_list
+            feature_image = fil.use_filter(self.image_shape, image_list)
+            new_image_list.append(feature_image)
+        return sigmoid(new_image_list)
 
     def get_num_filters(self):
         return self.filter_shape[0]
@@ -51,8 +64,8 @@ class Filter:
         self.feature_map_length = filter_size[2]
         self.feature_map_height = filter_size[1]
         self.num_feature_maps = filter_size[0]
-        self.weights = np.random.randn(filter_size)
-        self.bias = np.random.random
+        self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length) for f in range(self.num_feature_maps)]
+        self.bias = np.random.random()
 
     # Takes in a list of images and applies the filter specific to the object to the filter, returning the new 2D image
     # Args:
@@ -63,10 +76,10 @@ class Filter:
         new_image_size = (image_shape[1] - self.feature_map_height + 1, image_shape[2] - self.feature_map_length + 1)
         new_image = np.zeros(new_image_size)
         for i in range(num_images):
-            new_image += self.use_feature_map(self.weights[i], image_list[i])
+            new_image += self.use_feature_map(self.weights[i], new_image_size, image_list[i])
         for y in range(new_image_size[0]):
             for x in range(new_image_size[1]):
-                new_image[y][x] += self.bias
+                new_image[y][x] = new_image[y][x]+ self.bias
         return new_image
 
 
@@ -77,8 +90,8 @@ class Filter:
         new_image = np.zeros(new_image_size)
         for x in range(new_image_size[1]):
             for y in range(new_image_size[0]):
-                img_piece = image[y:y+self.feature_map_height, x:x+self.feature_map_length]
-                new_image_size[y][x] = np.dot(feature_map.ravel(), img_piece.ravel())
+                img_piece = image[y:y+self.feature_map_height,x:x+self.feature_map_length]
+                new_image[y][x] = np.dot(feature_map.ravel(), img_piece.ravel())
         return new_image
 
     def get_filter_size(self):

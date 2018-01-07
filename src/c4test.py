@@ -13,7 +13,7 @@ def pickMove(network, player, game):
     return score.index(max(score))
 
 game = connectFour.Game()
-network = net.load("c42.txt")
+network = net.load("net_gen2600.txt")
 game.print_board()
 while(game.checkWinner() == -1):
     move = input("Pick a move: ")

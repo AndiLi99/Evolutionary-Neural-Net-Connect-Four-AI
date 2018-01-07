@@ -16,18 +16,17 @@ def pickMove (board, player, depth, network):
     for i in validMoves:
         scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth, -1*sys.maxint, sys.maxint,player, -1*player, network))
 
-    print scores
     return validMoves[scores.index(max(scores))]
 
 def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     win = connectFour.checkWinner(node)
     if not win == 2:
-        print "winner is: " + str(win)
         return win*sys.maxint*player
     if depth == 0:
-        # return network.feed_forward(node.gameState)
-        b = random.random()
-        return b
+        if player == 1:
+            return network.feed_forward(node)[0]
+        else:
+            return network.feed_forward(node)[1]
 
     validMoves = []
 
@@ -37,7 +36,6 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     random.shuffle(validMoves)
 
     if player == currPlayer:
-        print "my tun"
         v = -1*sys.maxint
         for i in validMoves:
             v = max(v, alphabeta(connectFour.play(deepcopy(node), currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
@@ -54,21 +52,21 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
             if beta <=  alpha:
                 break #alpha cutoff
         return v
-
-board = np.zeros((6,7))
-
-print deepcopy(board)[0][0]
-network = 0
-while(connectFour.checkWinner(board) ==2):
-    move = input("make a move: ")
-    if not connectFour.check_valid(board, move):
-        continue
-    # connectFour.play(board, 1, pickMove(board, 1, 2))
-    connectFour.play(board, 1, move)
-    connectFour.print_board(board)
-    # raw_input("press")
-    print
-    if not connectFour.checkWinner(board)==2:
-        break
-    connectFour.play(board, -1, pickMove(board, -1, 3, 0))
-    connectFour.print_board(board)
+#
+# board = np.zeros((6,7))
+#
+# print deepcopy(board)[0][0]
+# network = 0
+# while(connectFour.checkWinner(board) ==2):
+#     move = input("make a move: ")
+#     if not connectFour.check_valid(board, move):
+#         continue
+#     # connectFour.play(board, 1, pickMove(board, 1, 2))
+#     connectFour.play(board, 1, move)
+#     connectFour.print_board(board)
+#     # raw_input("press")
+#     print
+#     if not connectFour.checkWinner(board)==2:
+#         break
+#     connectFour.play(board, -1, pickMove(board, -1, 3, 0))
+#     connectFour.print_board(board)
