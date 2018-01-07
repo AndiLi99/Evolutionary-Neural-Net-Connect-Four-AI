@@ -1,4 +1,4 @@
-from conv_layer import ConvLayer
+from conv_layer import ConvLayer, Filter
 from dense_layer import DenseLayer
 from softmax_layer import SoftmaxLayer
 import numpy as np
@@ -77,3 +77,115 @@ class Individual:
                 self.num_genes += l.get_num_filters()
             elif lt == "dense" or lt == "soft":
                 self.num_genes += l.get_num_neurons()
+
+    def save(self, filename):
+        file = open(filename, 'w')
+
+        layer_types = self.get_layer_types()
+        layer_shapes = self.get_layer_shapes()
+        layers = self.get_layers()
+        num_layers = len(layer_types)
+
+        # Store number of layers
+        file.write(str(num_layers) + "\n")
+
+        for lt, ls, l in zip(layer_types, layer_shapes, layers):
+            # Store layer type
+            file.write(lt + "\n")
+            if lt == "conv":
+                # Store layer shape
+                for x in ls:
+                    for y in x:
+                        file.write(str(y) + "\n")
+                # Store filters
+                for f in l.get_all_filters():
+                    w = f.get_weights()
+                    b = f.get_bias()
+
+                    for i in w:
+                        for j in i:
+                            for k in j:
+                                file.write(str(k) + "\n")
+
+                    file.write(str(b) + "\n")
+            elif lt == "dense" or lt == "soft":
+                # Store layer shape
+                for x in ls[0]:
+                    file.write(str(x) + "\n")
+
+                # Store weights
+                for w in l.get_all_weights():
+                    for i in w:
+                        file.write(str(i) + "\n")
+
+                # Store biases
+                for b in l.get_all_biases():
+                    file.write(str(i) + "\n")
+
+        file.close()
+
+def load (filename):
+    counter = 0
+    file = open(filename, 'r')
+    # read line by line
+    arr = file.read().splitlines()
+
+    layer_types = []
+    layer_shapes = []
+    layers = []
+
+    num_layers = int(arr[counter])
+    counter += 1
+
+    type = arr[counter]
+    layer_types.append(type)
+    counter += 1
+
+    for i in range(num_layers):
+        if type == "conv":
+            image_shape = (int(arr[counter]), int(arr[counter + 1]), int(arr[counter + 2]))
+            counter += 3
+
+            filter_shape = (int(arr[counter]), int(arr[counter + 1]), int(arr[counter + 2]), int(arr[counter + 3]))
+            counter += 4
+
+            filters = []
+
+            for i in range(filter_shape[0]):
+                weights = np.zeros(filter_shape)
+                bias = 0
+
+                for i in range(filter_shape[0]):
+                    for j in range(filter_shape[1]):
+                        for k in range(filter_shape[2]):
+                            weights[i][j][k] = float(arr[counter])
+                            counter += 1
+                bias = float(arr[counter])
+                counter += 1
+
+                filters.append(Filter(filter_shape[1:], weights, bias))
+
+            layers.append(ConvLayer(image_shape, filter_shape, filters))
+
+        elif type == "dense" or type == "soft":
+            shpe = (int(arr[counter]), int(arr[counter + 1]))
+            layer_shapes.append([shpe])
+            counter += 2
+
+            weights = np.zeros(shpe)
+            biases = np.zeros(shpe[0])
+
+            for cl in range(shpe[0]):
+                for pl in range(shpe[1]):
+                    weights[cl][pl] = float(arr[counter])
+                    counter += 1
+
+            for cl in range(shpe[0]):
+                biases[cl] = float(arr[counter])
+                counter += 1
+
+            if type == "dense":
+                layers.append(DenseLayer(shpe, weights, biases))
+            elif type == "soft":
+                layers.append(SoftmaxLayer(shpe, weights, biases))
+    return Individual(layer_types, layer_shapes, layers)

@@ -267,56 +267,57 @@ def load_population(file_name):
         num_layers = int(arr[counter])
         counter += 1
 
-        type = arr[counter]
-        layer_types.append(type)
-        counter += 1
+        for j in range(num_layers):
+            type = arr[counter]
+            layer_types.append(type)
+            counter += 1
 
-        if type == "conv":
-            image_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]))
-            counter += 3
+            if type == "conv":
+                image_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]))
+                counter += 3
 
-            filter_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]), int(arr[counter+3]))
-            counter += 4
+                filter_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]), int(arr[counter+3]))
+                counter += 4
 
-            filters = []
-
-            for i in range(filter_shape[0]):
-                weights = np.zeros(filter_shape)
-                bias = 0
+                filters = []
 
                 for i in range(filter_shape[0]):
-                    for j in range(filter_shape[1]):
-                        for k in range(filter_shape[2]):
-                            weights[i][j][k] = float(arr[counter])
-                            counter += 1
-                bias = float(arr[counter])
-                counter += 1
+                    weights = np.zeros(filter_shape)
+                    bias = 0
 
-                filters.append(Filter(filter_shape[1:], weights, bias))
+                    for i in range(filter_shape[0]):
+                        for j in range(filter_shape[1]):
+                            for k in range(filter_shape[2]):
+                                weights[i][j][k] = float(arr[counter])
+                                counter += 1
+                    bias = float(arr[counter])
+                    counter += 1
 
-            layers.append(ConvLayer(image_shape, filter_shape, filters))
+                    filters.append(Filter(filter_shape[1:], weights, bias))
 
-        elif type == "dense" or type == "soft":
-            shpe = (int(arr[counter]), int(arr[counter+1]))
-            layer_shapes.append([shpe])
-            counter += 2
+                layers.append(ConvLayer(image_shape, filter_shape, filters))
 
-            weights = np.zeros(shpe)
-            biases = np.zeros(shpe[0])
+            elif type == "dense" or type == "soft":
+                shpe = (int(arr[counter]), int(arr[counter+1]))
+                layer_shapes.append([shpe])
+                counter += 2
 
-            for cl in range(shpe[0]):
-                for pl in range(shpe[1]):
-                    weights[cl][pl] = float(arr[counter])
+                weights = np.zeros(shpe)
+                biases = np.zeros(shpe[0])
+
+                for cl in range(shpe[0]):
+                    for pl in range(shpe[1]):
+                        weights[cl][pl] = float(arr[counter])
+                        counter+=1
+
+                for cl in range(shpe[0]):
+                    biases[cl] = float(arr[counter])
                     counter+=1
 
-            for cl in range(shpe[0]):
-                biases[cl] = float(arr[counter])
-                counter+=1
-
-            if type == "dense":
-                layers.append(DenseLayer(shpe, weights, biases))
-            elif type == "soft":
-                layers.append(SoftmaxLayer(shpe, weights, biases))
+                if type == "dense":
+                    layers.append(DenseLayer(shpe, weights, biases))
+                elif type == "soft":
+                    layers.append(SoftmaxLayer(shpe, weights, biases))
 
         initial_pop.append(Individual(layer_types, layer_shapes, layers))
     population = Pop(layer_types, layer_shapes, pop_size, initial_pop)
