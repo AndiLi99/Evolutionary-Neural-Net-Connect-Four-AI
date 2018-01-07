@@ -1,12 +1,21 @@
 import numpy as np
 import copy
 import net
+import sys
 
 def print_board(board):
     for i in reversed(range(6)):
-        print(board[i])
+        for x in range(7):
+            if board[i][x] == 0:
+                sys.stdout.write(". ")
+            elif board[i][x] == 1:
+                sys.stdout.write("X ")
+            elif board[i][x] == -1:
+                sys.stdout.write("O ")
+            sys.stdout.flush()
+        print
     print
-    
+
 def play (board, player, position):
     for y in range(6):
         if board[y][position] == 0:
@@ -15,6 +24,12 @@ def play (board, player, position):
         elif y == 6:
             print "Error: invalid move"
     return board
+
+def unplay (board, position):
+    for y in reversed(range(6)):
+        if not board[y][position] == 0:
+            board[y][position] = 0
+            break
 
 def newState (board, player, position):
     g = copy.copy(board)

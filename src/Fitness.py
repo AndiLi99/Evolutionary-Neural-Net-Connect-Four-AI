@@ -2,6 +2,7 @@ import numpy as np
 from random import randint
 import net
 import connectFour
+import timer
 import minimax
 
 length = 7
@@ -20,11 +21,14 @@ def compete(net1, net2):
 def populationFitness(population, numGamesPerIndividual):
     fitness = np.zeros(len(population))
     for x in range(len(population)):
+        print "Individual: " + str(x)
         for y in range(numGamesPerIndividual):
             opponent = randint(0, len(population)-1)
             while opponent == x:
                 opponent = randint(0, len(population)-1)
+            time = timer.Timer()
             winner = compete(population[x], population[opponent])
+            time.lap()
             fitness[x] += winner
             fitness[opponent] -= winner
     return fitness

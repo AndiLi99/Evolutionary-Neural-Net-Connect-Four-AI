@@ -54,6 +54,10 @@ class DenseLayer:# -- Class for the dense layer
     def get_layer_shape(self):
         return self.layer_shape
 
+    # Returns the total number of neurons
+    def get_num_neurons(self):
+        return self.layer_shape[0]
+
     # Sets the weights and biases
     # Args:
     #   weights (2D np array): a np array of weights. Size of weights expected to be (number of neurons on current

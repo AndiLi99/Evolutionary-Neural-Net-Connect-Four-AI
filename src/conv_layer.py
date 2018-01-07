@@ -109,8 +109,12 @@ class Filter:
     def get_weights(self):
         return self.weights
 
-    def get_biases(self):
+    def get_bias(self):
         return self.bias
+
+    # Returns the total number of neurons
+    def get_num_neurons(self):
+        return weights.size+biases.size
 
     def set_weights(self, weights):
         self.weights = weights
