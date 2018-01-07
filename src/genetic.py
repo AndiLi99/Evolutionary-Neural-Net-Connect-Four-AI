@@ -11,14 +11,35 @@ from softmax_layer import SoftmaxLayer
 from operator import itemgetter
 
 class Pop:
-    def __init__(self, layer_types, layer_shapes, initial_pop):
-        self.population = []
+    # Args:
+    #   layer_types (string list): a list of strings indicating the structure of each individual (see individual.py
+    #           for more detail)
+    #   layer_shapes (tuple list): a list of list of tuples indicating the shape of each individual (see individual.py
+    #           for more detail)
+    #   initial_pop (int): how many individuals should be in the population
+    #   population (list of individuals) optional: a list of individuals to be used
+    def __init__(self, layer_types, layer_shapes, initial_pop, population=None):
         self.pop_size = initial_pop
-        self.fitness = zip(np.zeros(initial_pop), range(initial_pop))
         self.layer_types = layer_types
         self.layer_shapes = layer_shapes
-        for i in range(initial_pop):
-            self.population.append(Individual(layer_types, layer_shapes))
+
+        if population:
+            self.population = population
+
+            # If not enough members, create random ones
+            if initial_pop < len(population):
+                while initial_pop < len(population):
+                    self.population.append(Individual(layer_types, layer_shapes))
+            else:
+                self.pop_size = len(population)
+
+            self.fitness = zip(np.zeros(self.pop_size), range(self.pop_size))
+        else:
+            self.fitness = zip(np.zeros(initial_pop), range(initial_pop))
+
+            self.population = []
+            for i in range(initial_pop):
+                self.population.append(Individual(layer_types, layer_shapes))
 
     def evolve (self, games_played):
         #fitness is a 1D array of the fitness of each member
@@ -159,65 +180,146 @@ class Pop:
         self.pop_size = len(population)
         self.layer_sizes = layer_sizes
 
+    # Saves population to a file
+    # File format:
+    #   1. number of individuals in population
+    #   2. each individuals data
+    #       a) number of layers
+    #       b) each layers data
+    #           i) layer type
+    #           ii) layer shape
+    #           iii) weight list
+    #           iv) bias list
     def save (self, file_name):
         file = open(file_name, 'w')
-        file.write(str(self.pop_size))
+
+        # Store population size
+        file.write(str(self.pop_size) + "\n")
+
+        # Store each individual
         for individual in self.population:
             layer_types = individual.get_layer_types()
+            layer_shapes = individual.get_layer_shapes()
+            layers = individual.get_layers()
+            num_layers = len(layer_types)
 
-            layer_shapes = individual.l
-            file.write("\n"+str(len(l_s)))
-            for x in l_s:
-                file.write("\n" + str(x))
-            w = net.get_weights()
-            for a in w:
-                for b in a:
-                    for c in b:
-                        file.write("\n" + str(c))
+            # Store number of layers
+            file.write(str(num_layers) + "\n")
 
-            b = net.get_biases()
-            for a in b:
-                for c in a:
-                    file.write("\n" + str(c))
+            for lt, ls, l in zip(layer_types, layer_shapes, layers):
+                # Store layer type
+                file.write(lt + "\n")
+                if lt == "conv":
+                    # Store layer shape
+                    for x in ls:
+                        for y in x:
+                            file.write(str(y) + "\n")
+                    # Store filters
+                    for f in l.get_all_filters():
+                        w = f.get_weights()
+                        b = f.get_bias()
+
+                        for i in w:
+                            for j in i:
+                                for k in j:
+                                    file.write(str(k) + "\n")
+
+                        file.write(str(b) + "\n")
+                elif lt == "dense" or lt == "soft":
+                    # Store layer shape
+                    for x in ls[0]:
+                        file.write(str(x) + "\n")
+
+                    # Store weights
+                    for w in l.get_all_weights():
+                        for i in w:
+                            file.write(str(i) + "\n")
+
+                    # Store biases
+                    for b in l.get_all_biases():
+                        file.write(str(i) + "\n")
         file.close()
-#
-# def load_population(file_name):
-#     counter = 0
-#     file = open(file_name, 'r')
-#     #read line by line
-#     arr = file.read().splitlines()
-#     pop_size = int(arr[counter])
-#     counter +=1
-#     pop = []
-#     layer_sizes = []
-#     for i in range(pop_size):
-#         n_layers = int(arr[counter])
-#         counter += 1
-#         layer_sizes = []
-#         for x in range(n_layers):
-#             layer_sizes.append(int(arr[counter]))
-#             counter += 1
-#         biases = []
-#         weights = []
-#         for x in range(1, n_layers):
-#             layer = []
-#             for y in range(layer_sizes[x]):
-#                 neuron = []
-#                 for z in range(layer_sizes[x-1]):
-#                     neuron.append(float(arr[counter]))
-#                     counter += 1
-#                 layer.append(neuron)
-#             weights.append(layer)
-#         for x in range (1, n_layers):
-#             layer = []
-#             for y in range(layer_sizes[x]):
-#                 layer.append(float(arr[counter]))
-#                 counter += 1
-#             biases.append(layer)
-#         file.close()
-#         network = net.Net(layer_sizes)
-#         network.set_weights_biases(weights, biases)
-#         pop.append(network)
-#     p = Pop([],0)
-#     p.set_population(pop, layer_sizes)
-#     return p
+
+# Loads population from a saved file
+# File format:
+#   1. number of individuals in population
+#   2. each individuals data
+#       a) number of layers
+#       b) each layers data
+#           i) layer type
+#           ii) weight list
+#           iii) bias list
+def load_population(file_name):
+    counter = 0
+    file = open(file_name, 'r')
+    #read line by line
+    arr = file.read().splitlines()
+
+    pop_size = int(arr[counter])
+    counter += 1
+    initial_pop = []
+
+    for i in range(pop_size):
+        layer_types = []
+        layer_shapes = []
+        layers = []
+
+        num_layers = int(arr[counter])
+        counter += 1
+
+        type = arr[counter]
+        layer_types.append(type)
+        counter += 1
+
+        if type == "conv":
+            image_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]))
+            counter += 3
+
+            filter_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]), int(arr[counter+3]))
+            counter += 4
+
+            filters = []
+
+            for i in range(filter_shape[0]):
+                weights = np.zeros(filter_shape)
+                bias = 0
+
+                for i in range(filter_shape[0]):
+                    for j in range(filter_shape[1]):
+                        for k in range(filter_shape[2]):
+                            weights[i][j][k] = float(arr[counter])
+                            counter += 1
+                bias = float(arr[counter])
+                counter += 1
+
+                filters.append(Filter(filter_shape[1:], weights, bias))
+
+            layers.append(ConvLayer(image_shape, filter_shape, filters))
+
+        elif type == "dense" or type == "soft":
+            shpe = (int(arr[counter]), int(arr[counter+1]))
+            layer_shapes.append([shpe])
+            counter += 2
+
+            weights = np.zeros(shpe)
+            biases = np.zeros(shpe[0])
+
+            for cl in range(shpe[0]):
+                for pl in range(shpe[1]):
+                    weights[cl][pl] = float(arr[counter])
+                    counter+=1
+
+            for cl in range(shpe[0]):
+                biases[cl] = float(arr[counter])
+                counter+=1
+
+            if type == "dense":
+                layers.append(DenseLayer(shpe, weights, biases))
+            elif type == "soft":
+                layers.append(SoftmaxLayer(shpe, weights, biases))
+
+        initial_pop.append(Individual(layer_types, layer_shapes, layers))
+    population = Pop(layer_types, layer_shapes, pop_size, initial_pop)
+    return population
+
+
