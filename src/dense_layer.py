@@ -1,5 +1,4 @@
 import numpy as np
-from copy import deepcopy
 
 def sigmoid (z):
     for i in range(len(z)):
@@ -31,15 +30,15 @@ class DenseLayer:# -- Class for the dense layer
 
     # Returns all weights in the layer (2D Array)
     def get_all_weights(self):
-        return deepcopy(self.weights)
+        return self.weights
 
     # Returns all biases in the layer
     def get_all_biases(self):
-        return deepcopy(self.biases)
+        return self.biases
 
     # Returns weights in the layer connecting to a neuron (1D Array)
     def get_weights(self, index):
-        return deepcopy(self.weights[index])
+        return self.weights[index]
 
     # Returns all biases in the layer
     def get_biases(self, index):
@@ -47,7 +46,7 @@ class DenseLayer:# -- Class for the dense layer
 
     # Returns layer shape of network
     def get_layer_shape(self):
-        return deepcopy(self.layer_shape)
+        return self.layer_shape
 
     # Sets the weights and biases
     # Args:
@@ -61,7 +60,7 @@ class DenseLayer:# -- Class for the dense layer
         # Check that arrays are compatable
         if not len(weights) == len(biases):
             return "Failed to set parameters due to variance in weight and bias array sizes"
-        self.weights = deepcopy(weights)
-        self.biases = deepcopy(biases)
+        self.weights = weights
+        self.biases = biases
         self.layer_shape = (len(biases), len(weights[0]))
         return self.layer_shape

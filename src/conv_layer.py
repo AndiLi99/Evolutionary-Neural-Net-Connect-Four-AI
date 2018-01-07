@@ -1,5 +1,4 @@
 import numpy as np
-from copy import deepcopy
 
 def sigmoid (z):
     for i in range(len(z)):
@@ -41,19 +40,19 @@ class ConvLayer:
         return self.filter_shape[0]
 
     def get_filter(self, index):
-        return deepcopy(self.filters[index])
+        return self.filters[index]
 
     def get_all_filters(self):
-        return deepcopy(self.filters)
+        return self.filters
 
     def get_output_shape(self):
-        return deepcopy(self.output_shape)
+        return self.output_shape
 
-    def set_filter(self, index, filter):
-        self.filters[index] = deepcopy(filter)
+    def set_filter(self, index, filtr):
+        self.filters[index] = filtr
 
     def set_all_filters(self, filters):
-        self.filters = deepcopy(filters)
+        self.filters = filters
 
 # Individual filter objects
 class Filter:

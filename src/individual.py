@@ -2,7 +2,6 @@ from conv_layer import ConvLayer
 from dense_layer import DenseLayer
 from softmax_layer import SoftmaxLayer
 import numpy as np
-from copy import deepcopy
 
 class Individual:
     # Args:
@@ -57,21 +56,21 @@ class Individual:
         return input_layer
 
     def get_layers(self):
-        return deepcopy(self.layers)
+        return self.layers
 
     def get_layer_types(self):
-        return deepcopy(self.layer_types)
+        return self.layer_types
 
     def get_layer_shapes(self):
-        return deepcopy(self.layer_shapes)
+        return self.layer_shapes
 
     def get_num_genes(self):
         return self.num_genes
 
     def set_layers(self, layer_types, layer_shapes, layers):
-        self.layer_types = deepcopy(layer_types)
-        self.layer_shapes = deepcopy(layer_shapes)
-        self.layers = deepcopy(layers)
+        self.layer_types = layer_types
+        self.layer_shapes = layer_shapes
+        self.layers = layers
         self.num_genes = 0
         for lt, l in zip(layer_types, layers):
             if lt == "conv":

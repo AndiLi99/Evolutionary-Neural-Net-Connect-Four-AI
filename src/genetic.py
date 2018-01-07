@@ -87,7 +87,7 @@ class Pop:
                         f.set_weights(f.get_weights()+weight_mutation)
                         f.set_bias(f.get_bias()+bias_mutation)
 
-                        # Set mutations
+                        # Set mutated filter
                         l.set_filter(i, f)
             # If layer is dense or softmax
             elif lt == "dense" or lt == "soft":
@@ -132,7 +132,7 @@ class Pop:
                     # Randomly pick either mother or father gene based on alpha
                     if random.random() < alpha:
                         parent = fl
-                    lyr.set_filter(index=i, filter=parent.get_filter(i))
+                    lyr.set_filter(index=i, filter=deepcopy(parent.get_filter(i)))
                 layers.append(lyr)
             elif lt == "dense" or lt == "soft":
                 weights = []
@@ -147,8 +147,8 @@ class Pop:
                     # Randomly pick either mother or father gene based on alpha
                     if random.random() < alpha:
                         parent = fl
-                    weights.append(parent.get_weights[i])
-                    biases.append(parent.get_biases[i])
+                    weights.append(deepcopy(parent.get_weights[i]))
+                    biases.append(deepcopy(parent.get_biases[i]))
                 lyr.set_weights_biases(weights, biases)
                 layers.append(lyr)
         child = Individual(father.get_layer_types(), father.get_layer_shapes, layers)
@@ -159,25 +159,27 @@ class Pop:
         self.pop_size = len(population)
         self.layer_sizes = layer_sizes
 
-    # def save_population(self, file_name):
-    #     file = open(file_name, 'w')
-    #     file.write(str(self.pop_size))
-    #     for net in self.population:
-    #         l_s = net.get_layer_sizes()
-    #         file.write("\n"+str(len(l_s)))
-    #         for x in l_s:
-    #             file.write("\n" + str(x))
-    #         w = net.get_weights()
-    #         for a in w:
-    #             for b in a:
-    #                 for c in b:
-    #                     file.write("\n" + str(c))
-    #
-    #         b = net.get_biases()
-    #         for a in b:
-    #             for c in a:
-    #                 file.write("\n" + str(c))
-    #     file.close()
+    def save (self, file_name):
+        file = open(file_name, 'w')
+        file.write(str(self.pop_size))
+        for individual in self.population:
+            layer_types = individual.get_layer_types()
+
+            layer_shapes = individual.l
+            file.write("\n"+str(len(l_s)))
+            for x in l_s:
+                file.write("\n" + str(x))
+            w = net.get_weights()
+            for a in w:
+                for b in a:
+                    for c in b:
+                        file.write("\n" + str(c))
+
+            b = net.get_biases()
+            for a in b:
+                for c in a:
+                    file.write("\n" + str(c))
+        file.close()
 #
 # def load_population(file_name):
 #     counter = 0
