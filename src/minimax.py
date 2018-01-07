@@ -4,6 +4,7 @@ import numpy as np
 from copy import deepcopy
 import random
 import sys
+import timer
 
 #wrapper function to decide most promising move
 def pickMove (board, player, depth, network):
@@ -13,6 +14,7 @@ def pickMove (board, player, depth, network):
             validMoves.append(i)
 
     scores = []
+
     for i in validMoves:
         scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth, -1*sys.maxint, sys.maxint,player, -1*player, network))
 
@@ -23,10 +25,12 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     if not win == 2:
         return win*sys.maxint*player
     if depth == 0:
+        v = network.feed_forward(node)
         if player == 1:
-            return network.feed_forward(node)[0]
+            return v[0]
         else:
-            return network.feed_forward(node)[1]
+            return v[1]
+        # return random.random()
 
     validMoves = []
 
@@ -38,7 +42,8 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     if player == currPlayer:
         v = -1*sys.maxint
         for i in validMoves:
-            v = max(v, alphabeta(connectFour.play(deepcopy(node), currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
+            v = max(v, alphabeta(connectFour.play(node, currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
+            connectFour.unplay(node, i)
             alpha = max(alpha, v)
             if beta <=  alpha:
                 break #beta cutoff
@@ -47,26 +52,9 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     elif not player == currPlayer:
         v = 1*sys.maxint
         for i in validMoves:
-            v = min (v, alphabeta(connectFour.play(deepcopy(node), currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
+            v = min (v, alphabeta(connectFour.play(node, currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
+            connectFour.unplay(node, i)
             beta = min(beta, v)
             if beta <=  alpha:
                 break #alpha cutoff
         return v
-#
-# board = np.zeros((6,7))
-#
-# print deepcopy(board)[0][0]
-# network = 0
-# while(connectFour.checkWinner(board) ==2):
-#     move = input("make a move: ")
-#     if not connectFour.check_valid(board, move):
-#         continue
-#     # connectFour.play(board, 1, pickMove(board, 1, 2))
-#     connectFour.play(board, 1, move)
-#     connectFour.print_board(board)
-#     # raw_input("press")
-#     print
-#     if not connectFour.checkWinner(board)==2:
-#         break
-#     connectFour.play(board, -1, pickMove(board, -1, 3, 0))
-#     connectFour.print_board(board)

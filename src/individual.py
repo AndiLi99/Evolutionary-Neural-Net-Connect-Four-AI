@@ -30,7 +30,13 @@ class Individual:
                     self.num_genes += shpe[0][0]
         else:
             self.layers = layers
-
+            for type, shpe in zip(layer_types, layer_shapes):
+                if type == "conv":
+                    self.num_genes += shpe[1][0]
+                elif type == "dense":
+                    self.num_genes += shpe[0][0]
+                elif type == "soft":
+                    self.num_genes += shpe[0][0]
     # Returns the output of the network given an input
     # Args:
     #   input_layer (np array): the input
