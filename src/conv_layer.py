@@ -17,15 +17,18 @@ class ConvLayer:
     # Args:
     #   image_shape: a 3-tuple (num_images, image_height, image_length)
     #   filter_shape: a 4-tuple (num_filters, filter_depth, filter_height, filter_length)
-    def __init__(self, image_shape, filter_shape):
+    def __init__(self, image_shape, filter_shape, filters=None):
         self.image_shape = image_shape
         self.filter_shape = filter_shape
         self.output_shape = (filter_shape[0], image_shape[1]-filter_shape[1]+1, image_shape[2]-filter_shape[2]+1)
 
         # Create list of filter objects
-        self.filters = []
-        for i in range(filter_shape[0]):
-            self.filters.append(Filter(self.filter_shape[1:]))
+        if filters:
+            self.filters = filters
+        else:
+            self.filters = []
+            for i in range(filter_shape[0]):
+                self.filters.append(Filter(self.filter_shape[1:]))
 
     # Forwards past a list of images and returns the new list of images
     def feed_forward (self, image_list):
@@ -58,13 +61,20 @@ class ConvLayer:
 class Filter:
     # Args:
     #   filter_size: a 3-tuple (filter_depth, filter_height, filter_length)
-    def __init__(self, filter_size):
+    def __init__(self, filter_size, weights=None, bias=None):
         self.filter_size = filter_size
         self.feature_map_length = filter_size[2]
         self.feature_map_height = filter_size[1]
         self.num_feature_maps = filter_size[0]
-        self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length) for f in range(self.num_feature_maps)]
-        self.bias = np.random.random()
+        if weights:
+            self.weights = weights
+        else:
+            self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length) for f in range(self.num_feature_maps)]
+
+        if bias:
+            self.bias = bias
+        else:
+            self.bias = np.random.random()
 
     # Takes in a list of images and applies the filter specific to the object to the filter, returning the new 2D image
     # Args:

@@ -15,14 +15,20 @@ def softmax (z):
 class SoftmaxLayer:# -- Class for the softmax layer
     # Args:
     #   layer_shape (tuple): a 2-tuple (number of neurons on current layer, number of neurons on previous layer)
-    def __init__(self, layer_shape):
+    def __init__(self, layer_shape, weights=None, biases=None):
         self.layer_shape = layer_shape
         # Biases is a list biases for each neuron
-        self.biases = np.random.randn(layer_shape[0])
+        if biases:
+            self.biases = biases
+        else:
+            self.biases = np.random.randn(layer_shape[0])
 
         # Weights is a 2D list w[x][y] where x is the neuron number in the current layer and
         # y is the neuron number on the previous layer
-        self.weights = np.random.randn(layer_shape[0], layer_shape[1])
+        if weights:
+            self.weights = weights
+        else:
+            self.weights = np.random.randn(layer_shape[0], layer_shape[1])
 
     # Calculates the activation of the layer given a list of activations
     # Args:
