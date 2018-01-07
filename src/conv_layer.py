@@ -47,7 +47,7 @@ class Filter:
     # Args:
     #   filter_size: a 3-tuple (filter_depth, filter_height, filter_length)
     def __init__(self, filter_size):
-        self.filter_shape = filter_size
+        self.filter_size = filter_size
         self.feature_map_length = filter_size[2]
         self.feature_map_height = filter_size[1]
         self.num_feature_maps = filter_size[0]
@@ -80,3 +80,18 @@ class Filter:
                 img_piece = image[y:y+self.feature_map_height, x:x+self.feature_map_length]
                 new_image_size[y][x] = np.dot(feature_map.ravel(), img_piece.ravel())
         return new_image
+
+    def get_filter_size(self):
+        return self.filter_size
+
+    def get_weights(self):
+        return self.weights
+
+    def get_biases(self):
+        return self.bias
+
+    def set_weights(self, weights):
+        self.weights = weights
+
+    def set_bias(self, bias):
+        self.bias = bias
