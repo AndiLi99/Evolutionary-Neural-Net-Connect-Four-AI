@@ -1,6 +1,5 @@
 import numpy as np
 from random import randint
-import net
 import connectFour
 import timer
 import minimax

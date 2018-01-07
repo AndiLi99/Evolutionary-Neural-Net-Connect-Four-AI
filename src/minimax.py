@@ -1,4 +1,3 @@
-import net
 import connectFour
 import numpy as np
 from copy import deepcopy
