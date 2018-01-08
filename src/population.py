@@ -41,22 +41,29 @@ class Population:
             for i in range(initial_pop):
                 self.population.append(Individual(layer_types, layer_shapes))
 
-    def evolve (self, games_played):
+    # Evolves the population by selecting the top 25% and crossing over and mutating to create children
+    # Args:
+    #   games_played (int): the minimum number of games each network will play against other networks
+    #   survival_chance (float) optional: the chance a random member will live to the next generation
+    def evolve (self, games_played, survival_chance=0.1):
         # fitness is a 1D array of the fitness of each member
         self.fitness = zip(fitness.populationFitness(self.population, games_played), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
 
-        #10% chance of population lives randomly
-        survivors = [0 if random.random() > 0.1 else 1 for i in range(self.pop_size)]
+        # Chance of population lives randomly
+        survivors = [0 if random.random() > survival_chance else 1 for i in range(self.pop_size)]
 
+        # Keep best 25%
         for i in range(0, self.pop_size/4):
             survivors [self.fitness[i][1]] = 1
 
+        # Store who survives
         survivors_index = []
         for i in range(self.pop_size):
             if survivors[i] == 1:
                 survivors_index.append(i)
 
+        # Create and save new population
         newPop = []
         for i in range(len(survivors_index)):
             newPop.append(self.population[survivors_index[i]])
@@ -64,6 +71,10 @@ class Population:
             newPop.append(crossover(self.population[survivors_index[random.randint(0, len(survivors_index) -1)]], self.population[survivors_index[random.randint(0, len(survivors_index) -1)]]))
         self.population = newPop
 
+    # Sets a population
+    # Args:
+    #   population (list of Individuals): population to be used
+    #   layer_sizes: list of layer sizes (syntax explained in individual.py)
     def set_population(self, population, layer_sizes):
         self.population = population
         self.pop_size = len(population)
@@ -126,7 +137,7 @@ class Population:
 
                     # Store biases
                     for b in l.get_all_biases():
-                        file.write(str(i) + "\n")
+                        file.write(str(b) + "\n")
         file.close()
 
 # Mutates an individual

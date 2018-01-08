@@ -128,7 +128,7 @@ class Individual:
 
                 # Store biases
                 for b in l.get_all_biases():
-                    file.write(str(i) + "\n")
+                    file.write(str(b) + "\n")
 
         file.close()
 
