@@ -11,9 +11,11 @@ def compete(net1, net2):
     board = np.zeros((6,7))
     while(connectFour.checkWinner(board) ==2):
         connectFour.play(board, 1, minimax.pickMove(board, 1, 2, net1))
+        connectFour.print_board(board)
         if not connectFour.checkWinner(board) ==2:
             break
         connectFour.play(board, -1, minimax.pickMove(board, -1, 2, net2))
+        connectFour.print_board(board)
 
     return connectFour.checkWinner(board)
 
