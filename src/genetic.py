@@ -43,8 +43,8 @@ class Pop:
 
     def evolve (self, games_played):
         # fitness is a 1D array of the fitness of each member
-        # self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
-        self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
+        self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
+        # self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
 
         #10% chance of population lives randomly
