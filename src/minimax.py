@@ -15,7 +15,7 @@ def pickMove (board, player, depth, network):
     scores = []
 
     for i in validMoves:
-        scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth, -1*(sys.maxint - 50), (sys.maxint - 50),player, -1*player, network))
+        scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth -1, -1*(sys.maxint - 50), (sys.maxint - 50),player, -1*player, network))
 
     return validMoves[scores.index(max(scores))]
 
@@ -23,7 +23,7 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     win = connectFour.checkWinner(node)
     if not win == 2:
         return win*(sys.maxint - 50 + depth)*player
-    if depth == 0:
+    if depth <= 0:
         v = network.feed_forward(node)
         if player == 1:
             return v[0]
