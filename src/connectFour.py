@@ -1,6 +1,5 @@
 import numpy as np
 import copy
-import net
 import sys
 
 def print_board(board):

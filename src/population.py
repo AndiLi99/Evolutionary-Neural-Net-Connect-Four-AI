@@ -1,7 +1,7 @@
 import numpy as np
 from copy import copy, deepcopy
 from individual import Individual
-import Fitness
+import fitness
 import random
 
 from conv_layer import ConvLayer, Filter
@@ -10,7 +10,7 @@ from softmax_layer import SoftmaxLayer
 
 from operator import itemgetter
 
-class Pop:
+class Population:
     # Args:
     #   layer_types (string list): a list of strings indicating the structure of each individual (see individual.py
     #           for more detail)
@@ -41,23 +41,29 @@ class Pop:
             for i in range(initial_pop):
                 self.population.append(Individual(layer_types, layer_shapes))
 
-    def evolve (self, games_played):
+    # Evolves the population by selecting the top 25% and crossing over and mutating to create children
+    # Args:
+    #   games_played (int): the minimum number of games each network will play against other networks
+    #   survival_chance (float) optional: the chance a random member will live to the next generation
+    def evolve (self, games_played, survival_chance=0.1):
         # fitness is a 1D array of the fitness of each member
-        self.fitness = zip(Fitness.populationFitness(self.population, games_played), range(self.pop_size))
-        # self.fitness = zip(np.random.randn(self.pop_size), range(self.pop_size))
+        self.fitness = zip(fitness.populationFitness(self.population, games_played), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
 
-        #10% chance of population lives randomly
-        survivors = [0 if random.random() > 0.1 else 1 for i in range(self.pop_size)]
+        # Chance of population lives randomly
+        survivors = [0 if random.random() > survival_chance else 1 for i in range(self.pop_size)]
 
+        # Keep best 25%
         for i in range(0, self.pop_size/4):
             survivors [self.fitness[i][1]] = 1
 
+        # Store who survives
         survivors_index = []
         for i in range(self.pop_size):
             if survivors[i] == 1:
                 survivors_index.append(i)
 
+        # Create and save new population
         newPop = []
         for i in range(len(survivors_index)):
             newPop.append(self.population[survivors_index[i]])
@@ -65,6 +71,10 @@ class Pop:
             newPop.append(crossover(self.population[survivors_index[random.randint(0, len(survivors_index) -1)]], self.population[survivors_index[random.randint(0, len(survivors_index) -1)]]))
         self.population = newPop
 
+    # Sets a population
+    # Args:
+    #   population (list of Individuals): population to be used
+    #   layer_sizes: list of layer sizes (syntax explained in individual.py)
     def set_population(self, population, layer_sizes):
         self.population = population
         self.pop_size = len(population)
@@ -127,7 +137,7 @@ class Pop:
 
                     # Store biases
                     for b in l.get_all_biases():
-                        file.write(str(i) + "\n")
+                        file.write(str(b) + "\n")
         file.close()
 
 # Mutates an individual
@@ -138,8 +148,9 @@ class Pop:
 
 def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
     # Set mutation chance so on average, 1 gene is mutated (probability = 1/total num genes)
-    if mutate_chance is not None:
-        mutate_chance = 1.0/individual.get_num_genes()
+    if mutate_chance is None:
+        mutate_chance = (1.0/individual.get_num_genes())*3.0
+        print(mutate_chance)
 
     # Stores data for new mutated individual
     layer_types = individual.get_layer_types()
@@ -156,6 +167,7 @@ def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
             for i, f in enumerate(filters):
                 # Randomly select filters to be mutated
                 if random.random() < mutate_chance:
+                    print("mutating conv")
                     # Randomly select a maximum mutation value for both weights and biases (adds more variance)
                     mutate_w = random.random()*mutate_range
                     mutate_b = random.random()*mutate_range
@@ -179,6 +191,7 @@ def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
             for i in range(len(biases)):
                 # Randomly select neurons whose weights and biases are to be mutated
                 if random.random() < mutate_chance:
+                    print("mutating dense")
                     # Randomly select a maximum mutation value for both weights and biases
                     mutate_w = random.random()*mutate_range
                     mutate_b = random.random()*mutate_range
@@ -232,7 +245,7 @@ def crossover (father, mother, alpha=0.5):
                 biases.append(deepcopy(parent.get_biases(i)))
             lyr.set_weights_biases(weights, biases)
             layers.append(lyr)
-    child = Individual(father.get_layer_types(), father.get_layer_shapes(), layers)
+    child = Individual(deepcopy(father.get_layer_types()), deepcopy(father.get_layer_shapes()), layers)
     child = mutate_individual(child)
     return child
 
@@ -318,5 +331,5 @@ def load_population(file_name):
                     layers.append(SoftmaxLayer(shpe, weights, biases))
 
         initial_pop.append(Individual(layer_types, layer_shapes, layers))
-    population = Pop(layer_types, layer_shapes, pop_size, initial_pop)
+    population = Population(initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), pop_size, initial_pop)
     return population
