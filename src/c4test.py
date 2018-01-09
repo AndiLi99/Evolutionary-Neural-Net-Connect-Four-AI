@@ -18,23 +18,11 @@ for k in range(20):
     board = np.zeros((6,7))
     net40 = pop40.population[random.randint(0,19)]
     net0 = pop0.population[random.randint(0,19)]
-    while(connectFour.checkWinner(board) ==2):
-        # move = input("make a move: ")
-        # if not connectFour.check_valid(board, move):
-        #     continue
-        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 2, net40))
-        # connectFour.play(board, 1, move)
-        connectFour.print_board(board)
-        # raw_input("press")
-        #print
-        if not connectFour.checkWinner(board)==2:
-            break
-        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 2, net0))
-        connectFour.print_board(board)
-    print ("WINNER:" + str(connectFour.checkWinner(board)))
-    if connectFour.checkWinner(board) == 1:
+    win = fitness.compete(net40, net0)
+    print ("WINNER:" + str(win))
+    if win == 1:
         w+=1
-    elif connectFour.checkWinner(board) == 0:
+    elif win == 0:
         t+=1
     else:
         l+=1
@@ -50,23 +38,11 @@ for k in range(20):
     board = np.zeros((6,7))
     net40 = pop40.population[random.randint(0,19)]
     net0 = pop0.population[random.randint(0,19)]
-    while(connectFour.checkWinner(board) ==2):
-        move = input("make a move: ")
-        # if not connectFour.check_valid(board, move):
-        #     continue
-        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 2, net0))
-        # connectFour.play(board, 1, move)
-        connectFour.print_board(board)
-        # raw_input("press")
-        #print
-        if not connectFour.checkWinner(board)==2:
-            break
-        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 2, net40))
-        connectFour.print_board(board)
-    print ("WINNER:" + str(connectFour.checkWinner(board)))
-    if connectFour.checkWinner(board) == -1:
+    win = fitness.compete(net0, net40)
+    print ("WINNER:" + str(win))
+    if win == 1:
         w+=1
-    elif connectFour.checkWinner(board) == 0:
+    elif win == 0:
         t+=1
     else:
         l+=1

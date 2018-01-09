@@ -15,14 +15,14 @@ def pickMove (board, player, depth, network):
     scores = []
 
     for i in validMoves:
-        scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth -1, -1*(sys.maxint - 50), (sys.maxint - 50),player, -1*player, network))
-
+        scores.append(alphabeta(connectFour.play(deepcopy(board), player, i), depth -1, -1*(1234567 - 50), (1234567 - 50),player, -1*player, network))
+    print scores
     return validMoves[scores.index(max(scores))]
 
 def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     win = connectFour.checkWinner(node)
     if not win == 2:
-        return win*(sys.maxint - 50 + depth)*player
+        return win*(1234567 + depth)*player
     if depth <= 0:
         v = network.feed_forward(node)
         if player == 1:
@@ -39,7 +39,7 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
     random.shuffle(validMoves)
 
     if player == currPlayer:
-        v = -1*(sys.maxint - 50)
+        v = -1*(1234567 - 50)
         for i in validMoves:
             v = max(v, alphabeta(connectFour.play(node, currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
             connectFour.unplay(node, i)
@@ -49,7 +49,7 @@ def alphabeta (node, depth, alpha, beta, player, currPlayer, network):
         return v
 
     elif not player == currPlayer:
-        v = 1*(sys.maxint - 50)
+        v = 1*(1234567 - 50)
         for i in validMoves:
             v = min (v, alphabeta(connectFour.play(node, currPlayer, i), depth-1, alpha, beta, player, -1*currPlayer, network))
             connectFour.unplay(node, i)
