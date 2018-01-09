@@ -8,8 +8,7 @@ import population
 import random
 
 pop0 = population.load_population("pop_gen0.txt")
-pop20 = population.load_population("pop_gen20.txt")
-pop40 = population.load_population("pop_gen40.txt")
+pop40 = population.load_population("pop_gen100.txt")
 
 
 w = 0
@@ -20,18 +19,18 @@ for k in range(20):
     net40 = pop40.population[random.randint(0,19)]
     net0 = pop0.population[random.randint(0,19)]
     while(connectFour.checkWinner(board) ==2):
-        move = 1#input("make a move: ")
+        # move = input("make a move: ")
         # if not connectFour.check_valid(board, move):
         #     continue
-        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 3, net40))
+        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 2, net40))
         # connectFour.play(board, 1, move)
-        #connectFour.print_board(board)
+        connectFour.print_board(board)
         # raw_input("press")
         #print
         if not connectFour.checkWinner(board)==2:
             break
-        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 3, net0))
-        #connectFour.print_board(board)
+        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 2, net0))
+        connectFour.print_board(board)
     print ("WINNER:" + str(connectFour.checkWinner(board)))
     if connectFour.checkWinner(board) == 1:
         w+=1
@@ -39,6 +38,9 @@ for k in range(20):
         t+=1
     else:
         l+=1
+    move = input("make a move: ")
+
+
 print("WINS: %d  TIES: %d  LOSS: %d"%(w,t,l))
 
 w = 0
@@ -49,18 +51,18 @@ for k in range(20):
     net40 = pop40.population[random.randint(0,19)]
     net0 = pop0.population[random.randint(0,19)]
     while(connectFour.checkWinner(board) ==2):
-        move = 1#input("make a move: ")
+        move = input("make a move: ")
         # if not connectFour.check_valid(board, move):
         #     continue
-        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 3, net0))
+        board = connectFour.play(board, 1, minimax.pickMove(board, 1, 2, net0))
         # connectFour.play(board, 1, move)
-        #connectFour.print_board(board)
+        connectFour.print_board(board)
         # raw_input("press")
         #print
         if not connectFour.checkWinner(board)==2:
             break
-        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 3, net40))
-        #connectFour.print_board(board)
+        board = connectFour.play(board, -1, minimax.pickMove(board, -1, 2, net40))
+        connectFour.print_board(board)
     print ("WINNER:" + str(connectFour.checkWinner(board)))
     if connectFour.checkWinner(board) == -1:
         w+=1
@@ -68,6 +70,8 @@ for k in range(20):
         t+=1
     else:
         l+=1
+    move = input("make a move: ")
+
 print("WINS: %d  TIES: %d  LOSS: %d"%(w,t,l))
 #
 # while True:
