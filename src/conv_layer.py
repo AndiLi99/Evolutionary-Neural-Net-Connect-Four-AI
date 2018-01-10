@@ -12,15 +12,34 @@ def sigmoid (z):
                     z[i][j][k] = 1/(1+np.exp(z[i][j][k]))
     return z
 
+# Pads each image in a list of images with a specified amount of zeros
+# Args:
+#   image_list (np array): list of 2D images
+#   zero_padding (int): number of zeros around the border of each image
+def pad_with_zeros (image_list, zero_padding):
+    n_i = len(image_list)
+    h_i = len(image_list[0])
+    l_i = len(image_list[0][0])
+    zero_padded_images=np.zeros((n_i, h_i+2*zero_padding, l_i+2*zero_padding))
+    zero_padded_images[:,zero_padding:h_i+zero_padding,zero_padding:l_i+zero_padding] = image_list
+    return zero_padded_images
+
 # Convolution layer
 class ConvLayer:
     # Args:
     #   image_shape: a 3-tuple (num_images, image_height, image_length)
     #   filter_shape: a 4-tuple (num_filters, filter_depth, filter_height, filter_length)
-    def __init__(self, image_shape, filter_shape, filters=None):
+    #   filter_method (string) optional: the way the filter should be applied
+    #           "partial" to use the filter normally
+    #           "full" to allow the filter to go outside of the image (returns a filtered image the same size)
+    #   zero_padding (int) optional: number of zeros to be used around the border of an image if full filtering is used
+    #   filters (list of Filters) optional: list of filters to be used if already saved
+    def __init__(self, image_shape, filter_shape, filter_method="partial", zero_padding=0, filters=None):
         self.image_shape = image_shape
         self.filter_shape = filter_shape
         self.output_shape = (filter_shape[0], image_shape[1]-filter_shape[1]+1, image_shape[2]-filter_shape[2]+1)
+        self.filter_method = filter_method
+        self.zero_padding = zero_padding
 
         # Create list of filter objects
         if filters is not None:
@@ -33,9 +52,12 @@ class ConvLayer:
     # Forwards past a list of images and returns the new list of images
     def feed_forward (self, image_list):
         new_image_list = []
+        if self.filter_method=="full":
+            image_list = pad_with_zeros(image_list, self.zero_padding)
+
         for i in range(self.filter_shape[0]):
             fil = self.filters[i]
-            feature_image = fil.use_filter(self.image_shape, image_list)
+            feature_image = fil.use_filter(image_list)
             new_image_list.append(feature_image)
         return sigmoid(new_image_list)
 
@@ -78,11 +100,11 @@ class Filter:
 
     # Takes in a list of images and applies the filter specific to the object to the filter, returning the new 2D image
     # Args:
-    #   image_shape: a 3-tuple (num_images, image_height, image_length)
     #   image_list: a list of 2D images
-    def use_filter (self, image_shape, image_list):
-        num_images = image_shape[0]
-        new_image_size = (image_shape[1] - self.feature_map_height + 1, image_shape[2] - self.feature_map_length + 1)
+    def use_filter (self, image_list):
+        num_images = len(image_list)
+        # Partial filter method
+        new_image_size = (len(image_list[0]) - self.feature_map_height + 1, len(image_list[0][0]) - self.feature_map_length + 1)
         new_image = np.zeros(new_image_size)
         for i in range(num_images):
             new_image += self.use_feature_map(self.weights[i], new_image_size, image_list[i])
@@ -111,10 +133,6 @@ class Filter:
 
     def get_bias(self):
         return self.bias
-
-    # Returns the total number of neurons
-    def get_num_neurons(self):
-        return weights.size+biases.size
 
     def set_weights(self, weights):
         self.weights = weights

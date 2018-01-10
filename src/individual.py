@@ -12,7 +12,10 @@ class Individual:
     #   layer_shapes (list of lists of tuples): a list of lists of tuples indicating the shapes of each layer
     #           for convolution layers, a list should contain two seperate tuples (image shape, filter shape)
     #           for dense and softmax layers, a list should contain one individual tuple (layer shape)
-    def __init__(self, layer_types, layer_shapes, layers=None):
+    #   conv_layer_types (list of tuples) optional: a list of tuples (filter_method, zero padding) for customizing
+    #           the type of filter methods to be used
+    #   layers (list of Layer objects) optional: a list of layers to be used to load an individual network
+    def __init__(self, layer_types, layer_shapes, conv_layer_types=None, layers=None):
         self.layer_types = layer_types
         self.layer_shapes = layer_shapes
         self.num_genes = 0
@@ -27,15 +30,25 @@ class Individual:
                     self.num_genes += shpe[0][0]
         else:
             self.layers = []
+            cntr = 0
+            n_conv_layer_types = len(conv_layer_types)
             for typ, shpe in zip(layer_types, layer_shapes):
                 if typ == "conv":
-                    self.layers.append(ConvLayer(shpe[0], shpe[1]))
+                    if cntr >= n_conv_layer_types:
+                        self.layers.append(ConvLayer(image_shape=shpe[0],
+                                                     filter_shape=shpe[1],
+                                                     filter_method=conv_layer_types[cntr][0],
+                                                     zero_padding=conv_layer_types[cntr][1]))
+                        cntr += 1
+                    else:
+                        self.layers.append(ConvLayer(image_shape=shpe[0],
+                                                     filter_shape=shpe[1]))
                     self.num_genes += shpe[1][0]
                 elif typ == "dense":
-                    self.layers.append(DenseLayer(shpe[0]))
+                    self.layers.append(DenseLayer(layer_shape=shpe[0]))
                     self.num_genes += shpe[0][0]
                 elif typ == "soft":
-                    self.layers.append(SoftmaxLayer(shpe[0]))
+                    self.layers.append(SoftmaxLayer(layer_shape=shpe[0]))
                     self.num_genes += shpe[0][0]
 
     # Returns the output of the network given an input
