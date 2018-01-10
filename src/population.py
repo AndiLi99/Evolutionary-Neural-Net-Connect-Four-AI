@@ -246,7 +246,7 @@ def crossover (father, mother, alpha=0.5):
                 biases.append(deepcopy(parent.get_biases(i)))
             lyr.set_weights_biases(weights, biases)
             layers.append(lyr)
-    child = Individual(deepcopy(father.get_layer_types()), deepcopy(father.get_layer_shapes()), layers)
+    child = Individual(deepcopy(father.get_layer_types()), deepcopy(father.get_layer_shapes()), None, layers)
     child = mutate_individual(child)
     return child
 
@@ -307,7 +307,7 @@ def load_population(file_name):
 
                     filters.append(Filter(filter_shape[1:], weights, bias))
 
-                layers.append(ConvLayer(image_shape, filter_shape, filters))
+                layers.append(ConvLayer(image_shape, filter_shape, None, 0, filters))
 
             elif type == "dense" or type == "soft":
                 shpe = (int(arr[counter]), int(arr[counter+1]))
@@ -331,6 +331,6 @@ def load_population(file_name):
                 elif type == "soft":
                     layers.append(SoftmaxLayer(shpe, weights, biases))
 
-        initial_pop.append(Individual(layer_types, layer_shapes, layers))
-    population = Population(initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), pop_size, initial_pop)
+        initial_pop.append(Individual(layer_types, layer_shapes, None, layers))
+    population = Population(pop_size, initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), None, initial_pop)
     return population

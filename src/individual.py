@@ -31,10 +31,13 @@ class Individual:
         else:
             self.layers = []
             cntr = 0
-            n_conv_layer_types = len(conv_layer_types)
+            n_conv_layer_types = -1
+            print(conv_layer_types)
+            if conv_layer_types is not None:
+                n_conv_layer_types = len(conv_layer_types)
             for typ, shpe in zip(layer_types, layer_shapes):
                 if typ == "conv":
-                    if cntr >= n_conv_layer_types:
+                    if cntr <= n_conv_layer_types:
                         self.layers.append(ConvLayer(image_shape=shpe[0],
                                                      filter_shape=shpe[1],
                                                      filter_method=conv_layer_types[cntr][0],
