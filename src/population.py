@@ -12,16 +12,17 @@ from operator import itemgetter
 
 class Population:
     # Args:
+    #   initial_pop (int): how many individuals should be in the population
     #   layer_types (string list): a list of strings indicating the structure of each individual (see individual.py
     #           for more detail)
     #   layer_shapes (tuple list): a list of list of tuples indicating the shape of each individual (see individual.py
     #           for more detail)
-    #   initial_pop (int): how many individuals should be in the population
     #   population (list of individuals) optional: a list of individuals to be used
-    def __init__(self, layer_types, layer_shapes, initial_pop, population=None):
+    def __init__(self, initial_pop, layer_types, layer_shapes, conv_layer_types=None, population=None):
         self.pop_size = initial_pop
         self.layer_types = layer_types
         self.layer_shapes = layer_shapes
+        self.conv_layer_types = conv_layer_types
 
         if population is not None:
             self.population = population
@@ -29,7 +30,7 @@ class Population:
             # If not enough members, create random ones
             if initial_pop < len(population):
                 while initial_pop < len(population):
-                    self.population.append(Individual(layer_types, layer_shapes))
+                    self.population.append(Individual(layer_types, layer_shapes, conv_layer_types))
             else:
                 self.pop_size = len(population)
 
@@ -39,7 +40,7 @@ class Population:
 
             self.population = []
             for i in range(initial_pop):
-                self.population.append(Individual(layer_types, layer_shapes))
+                self.population.append(Individual(layer_types, layer_shapes, conv_layer_types))
 
     # Evolves the population by selecting the top 25% and crossing over and mutating to create children
     # Args:
