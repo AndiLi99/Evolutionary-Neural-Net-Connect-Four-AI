@@ -37,9 +37,20 @@ class ConvLayer:
     def __init__(self, image_shape, filter_shape, filter_method="partial", zero_padding=0, filters=None):
         self.image_shape = image_shape
         self.filter_shape = filter_shape
-        self.output_shape = (filter_shape[0], image_shape[1]-filter_shape[1]+1, image_shape[2]-filter_shape[2]+1)
         self.filter_method = filter_method
         self.zero_padding = zero_padding
+
+        # Calculate shape of output
+        self.output_shape = (filter_shape[0],
+                             image_shape[1]-filter_shape[1]+1+2*zero_padding,
+                             image_shape[2]-filter_shape[2]+1+2*zero_padding)
+
+        # Make sure zero padding is 0 and output shape is correct
+        if filter_method == "partial":
+            self.zero_padding = 0
+            self.output_shape = (filter_shape[0],
+                                image_shape[1] - filter_shape[1] + 1,
+                                image_shape[2] - filter_shape[2] + 1)
 
         # Create list of filter objects
         if filters is not None:
@@ -52,9 +63,11 @@ class ConvLayer:
     # Forwards past a list of images and returns the new list of images
     def feed_forward (self, image_list):
         new_image_list = []
+        # Pad the image with the appropriate amount of zeros if needed before passing it through the filters
         if self.filter_method=="full":
             image_list = pad_with_zeros(image_list, self.zero_padding)
 
+        # Loop for each filter
         for i in range(self.filter_shape[0]):
             fil = self.filters[i]
             feature_image = fil.use_filter(image_list)
@@ -77,7 +90,13 @@ class ConvLayer:
         self.filters[index] = filtr
 
     def set_all_filters(self, filters):
-        self.filters = filters
+        self.filters = filter
+
+    def get_filter_method(self):
+        return self.filter_method
+
+    def get_zero_padding(self):
+        return self.zero_padding
 
 # Individual filter objects
 class Filter:
@@ -103,11 +122,10 @@ class Filter:
     #   image_list: a list of 2D images
     def use_filter (self, image_list):
         num_images = len(image_list)
-        # Partial filter method
         new_image_size = (len(image_list[0]) - self.feature_map_height + 1, len(image_list[0][0]) - self.feature_map_length + 1)
         new_image = np.zeros(new_image_size)
         for i in range(num_images):
-            new_image += self.use_feature_map(self.weights[i], new_image_size, image_list[i])
+            new_image += self.use_feature_map(self.weights[i], image_list[i], new_image_size)
         for y in range(new_image_size[0]):
             for x in range(new_image_size[1]):
                 new_image[y][x] = new_image[y][x]+ self.bias
@@ -117,11 +135,12 @@ class Filter:
     # This method takes in a feature map and slides it across an image
     # Returns:
     #   a 2D array which is the new output image
-    def use_feature_map (self, feature_map, new_image_size, image):
+    def use_feature_map (self, feature_map, image, new_image_size):
         new_image = np.zeros(new_image_size)
         for x in range(new_image_size[1]):
             for y in range(new_image_size[0]):
                 img_piece = image[y:y+self.feature_map_height,x:x+self.feature_map_length]
+                print(np.dot(feature_map.ravel(), img_piece.ravel()))
                 new_image[y][x] = np.dot(feature_map.ravel(), img_piece.ravel())
         return new_image
 

@@ -17,6 +17,7 @@ class Population:
     #           for more detail)
     #   layer_shapes (tuple list): a list of list of tuples indicating the shape of each individual (see individual.py
     #           for more detail)
+    #   conv_layer_types (tuple list): a list of tuples (filter_method (string), zero_padding (int))
     #   population (list of individuals) optional: a list of individuals to be used
     def __init__(self, initial_pop, layer_types, layer_shapes, conv_layer_types=None, population=None):
         self.pop_size = initial_pop
@@ -88,6 +89,9 @@ class Population:
     #       a) number of layers
     #       b) each layers data
     #           i) layer type
+    #               -> if layer is convolution layer, also save:
+    #                       filter method
+    #                       zero padding
     #           ii) layer shape
     #           iii) weight list
     #           iv) bias list
@@ -111,6 +115,10 @@ class Population:
                 # Store layer type
                 file.write(lt + "\n")
                 if lt == "conv":
+                    # Store filtering type
+                    file.write(l.get_filter_method() + "\n")
+                    file.write(str(l.get_zero_padding()) + "\n")
+
                     # Store layer shape
                     for x in ls:
                         for y in x:
@@ -246,7 +254,7 @@ def crossover (father, mother, alpha=0.5):
                 biases.append(deepcopy(parent.get_biases(i)))
             lyr.set_weights_biases(weights, biases)
             layers.append(lyr)
-    child = Individual(deepcopy(father.get_layer_types()), deepcopy(father.get_layer_shapes()), None, layers)
+    child = Individual(deepcopy(father.get_layer_types()), deepcopy(father.get_layer_shapes()), deepcopy(father.get_conv_layer_types()), layers)
     child = mutate_individual(child)
     return child
 
@@ -257,8 +265,12 @@ def crossover (father, mother, alpha=0.5):
 #       a) number of layers
 #       b) each layers data
 #           i) layer type
-#           ii) weight list
-#           iii) bias list
+#               -> if layer is convolution layer, also save:
+#                       filter method
+#                       zero padding
+#           ii) layer shape
+#           iii) weight list
+#           iv) bias list
 def load_population(file_name):
     counter = 0
     file = open(file_name, 'r')
@@ -268,11 +280,13 @@ def load_population(file_name):
     pop_size = int(arr[counter])
     counter += 1
     initial_pop = []
+    clt = []
 
     for i in range(pop_size):
         layer_types = []
         layer_shapes = []
         layers = []
+        conv_layer_types = []
 
         num_layers = int(arr[counter])
         counter += 1
@@ -283,6 +297,13 @@ def load_population(file_name):
             counter += 1
 
             if type == "conv":
+                filter_method = arr[counter]
+                counter+=1
+                zero_padding = int(arr[counter])
+                counter+=1
+
+                conv_layer_types.append((filter_method, zero_padding))
+
                 image_shape = (int(arr[counter]), int(arr[counter+1]), int(arr[counter+2]))
                 counter += 3
 
@@ -307,7 +328,8 @@ def load_population(file_name):
 
                     filters.append(Filter(filter_shape[1:], weights, bias))
 
-                layers.append(ConvLayer(image_shape, filter_shape, None, 0, filters))
+                clt = conv_layer_types
+                layers.append(ConvLayer(image_shape, filter_shape, filter_method, zero_padding, filters))
 
             elif type == "dense" or type == "soft":
                 shpe = (int(arr[counter]), int(arr[counter+1]))
@@ -332,5 +354,5 @@ def load_population(file_name):
                     layers.append(SoftmaxLayer(shpe, weights, biases))
 
         initial_pop.append(Individual(layer_types, layer_shapes, None, layers))
-    population = Population(pop_size, initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), None, initial_pop)
+    population = Population(pop_size, initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), clt, initial_pop)
     return population
