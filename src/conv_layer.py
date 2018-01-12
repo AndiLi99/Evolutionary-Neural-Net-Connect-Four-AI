@@ -140,7 +140,6 @@ class Filter:
         for x in range(new_image_size[1]):
             for y in range(new_image_size[0]):
                 img_piece = image[y:y+self.feature_map_height,x:x+self.feature_map_length]
-                print(np.dot(feature_map.ravel(), img_piece.ravel()))
                 new_image[y][x] = np.dot(feature_map.ravel(), img_piece.ravel())
         return new_image
 
