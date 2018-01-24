@@ -51,7 +51,7 @@ class Population:
         # fitness is a 1D array of the fitness of each member
         self.fitness = zip(fitness.populationFitness(self.population, games_played), range(self.pop_size))
         self.fitness.sort(key=itemgetter(0))
-
+        self.fitness.reverse()
         # Chance of population lives randomly
         survivors = [0 if random.random() > survival_chance else 1 for i in range(self.pop_size)]
 
@@ -159,7 +159,6 @@ def mutate_individual(individual, mutate_range=0.1, mutate_chance=None):
     # Set mutation chance so on average, 1 gene is mutated (probability = 1/total num genes)
     if mutate_chance is None:
         mutate_chance = (1.0/individual.get_num_genes())*3.0
-        print(mutate_chance)
 
     # Stores data for new mutated individual
     layer_types = individual.get_layer_types()
