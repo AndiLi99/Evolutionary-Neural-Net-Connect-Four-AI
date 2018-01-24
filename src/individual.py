@@ -120,8 +120,8 @@ class Individual:
             file.write(lt + "\n")
             if lt == "conv":
                 # Store filter method
-                file.write(l.get_filter_type() + "\n")
-                file.write(l.get_zero_padding() + "\n")
+                file.write(l.get_filter_method() + "\n")
+                file.write(str(l.get_zero_padding()) + "\n")
                 # Store layer shape
                 for x in ls:
                     for y in x:
@@ -205,7 +205,7 @@ def load (filename):
 
                 filters.append(Filter(filter_shape[1:], weights, bias))
 
-            layers.append(ConvLayer(image_shape, filter_shape, filters))
+            layers.append(ConvLayer(image_shape, filter_shape, filter_method, zero_padding, filters))
 
         elif typ == "dense" or typ == "soft":
             shpe = (int(arr[counter]), int(arr[counter + 1]))

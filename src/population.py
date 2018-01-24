@@ -353,6 +353,6 @@ def load_population(file_name):
                 elif type == "soft":
                     layers.append(SoftmaxLayer(shpe, weights, biases))
 
-        initial_pop.append(Individual(layer_types, layer_shapes, None, layers))
+        initial_pop.append(Individual(layer_types, layer_shapes, clt, layers))
     population = Population(pop_size, initial_pop[0].get_layer_types(), initial_pop[0].get_layer_shapes(), clt, initial_pop)
     return population
